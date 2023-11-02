@@ -2,7 +2,7 @@ import client.User;
 import client.UserClient;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.html5.LocalStorage;
@@ -14,16 +14,12 @@ import page_object.ResetPasswordPageStellarBurgers;
 
 
 public class LoginTest extends BaseRule {
-    private final static String EMAIL = "samuraj999@ya.ru";
-    private final static String PASSWORD = "qwerty12345";
-    private final static String NAME = "Peter";
-
     static MainPageStellarBurgers mainPage;
     static LoginPageStellarBurgers loginPage;
     static RegisterPageStellarBurgers registerPage;
     ResetPasswordPageStellarBurgers resetPasswordPage;
-    public static String accessToken;
-    User user;
+    private String accessToken;
+    private User user;
 
 
     @Before
@@ -32,7 +28,7 @@ public class LoginTest extends BaseRule {
         loginPage = new LoginPageStellarBurgers(driver);
         registerPage = new RegisterPageStellarBurgers(driver);
         resetPasswordPage = new ResetPasswordPageStellarBurgers(driver);
-        user = new User(EMAIL, PASSWORD, NAME);
+        user = User.createRandomUser();
         UserClient.postCreateNewUser(user);
     }
 
@@ -41,7 +37,7 @@ public class LoginTest extends BaseRule {
     @Description("Проверка кнопки 'Войти в аккаунт' на главной странице лендинга.")
     public void enterByLoginButtonTest() {
         mainPage.clickOnLoginButton();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         mainPage.waitForLoadMainPage();
         LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
         accessToken = localStorage.getItem("accessToken");
@@ -52,8 +48,10 @@ public class LoginTest extends BaseRule {
     @Description("Проверка кнопки 'Личный Кабинет' на хедере главной страницы.")
     public void enterByPersonalAccountButtonTest() {
         mainPage.clickOnAccountButton();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         mainPage.waitForLoadMainPage();
+        LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
+        accessToken = localStorage.getItem("accessToken");
     }
 
     @Test
@@ -65,8 +63,10 @@ public class LoginTest extends BaseRule {
         registerPage.waitForLoadRegisterPage();
         registerPage.clickOnLoginButton();
         loginPage.waitForLoadEntrance();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         mainPage.waitForLoadMainPage();
+        LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
+        accessToken = localStorage.getItem("accessToken");
     }
 
     @Test
@@ -77,12 +77,14 @@ public class LoginTest extends BaseRule {
         loginPage.clickOnForgotPasswordLink();
         resetPasswordPage.waitForLoadedResetPassword();
         resetPasswordPage.clickOnLoginLink();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         mainPage.waitForLoadMainPage();
+        LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
+        accessToken = localStorage.getItem("accessToken");
     }
 
-    @AfterClass
-    public static void afterClass() {
+    @After
+    public void cleanUp() {
         UserClient.deleteUser(accessToken);
     }
 

@@ -73,35 +73,28 @@ public class MainPageStellarBurgers {
 
     @Step("Клик по кнопке 'Булки'")
     public void clickOnBunsButton() throws InterruptedException {
-        Thread.sleep(500);
         driver.findElement(bunsButton).click();
-
     }
 
     @Step("Клик по кнопке 'Соуса'")
     public void clickOnSaucesButton() throws InterruptedException {
-        Thread.sleep(500);
         driver.findElement(saucesButton).click();
     }
 
     @Step("Клик по кнопке 'Начинки'")
     public void clickOnFillingButton() throws InterruptedException {
-        Thread.sleep(500);
         driver.findElement(fillingsButton).click();
     }
 
     public void checkToppingBun() throws InterruptedException {
-        Thread.sleep(500);
         String countActivity = driver.findElement(activityTopping).getText();
         assertEquals("Булки", countActivity);
     }
     public void checkToppingSauce() throws InterruptedException {
-        Thread.sleep(500);
         String countActivity = driver.findElement(activityTopping).getText();
         assertEquals(countActivity,"Соусы");
     }
     public void checkToppingFillings() throws InterruptedException {
-        Thread.sleep(1000);
         String countActivity = driver.findElement(activityTopping).getText();
         assertEquals(countActivity,"Начинки");
     }

@@ -1,24 +1,18 @@
+import client.User;
 import client.UserClient;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.WebStorage;
 import page_object.LoginPageStellarBurgers;
 import page_object.MainPageStellarBurgers;
 import page_object.RegisterPageStellarBurgers;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 public class RegistrationTest extends BaseRule {
-    public static String accessToken;
-    String NAME = randomAlphanumeric(4, 8);
-    String EMAIL = randomAlphanumeric(6, 10) + "@ya.ru";
-    String PASSWORD = randomAlphanumeric(8, 16);
-    String PASSWORD_FAILED = randomAlphanumeric(1, 4);
+    private String accessToken;
+    private User user;
     MainPageStellarBurgers mainPage;
     LoginPageStellarBurgers loginPage;
     RegisterPageStellarBurgers registerPage;
@@ -28,6 +22,7 @@ public class RegistrationTest extends BaseRule {
         mainPage = new MainPageStellarBurgers(driver);
         loginPage = new LoginPageStellarBurgers(driver);
         registerPage = new RegisterPageStellarBurgers(driver);
+        user = User.createRandomUser();
     }
 
 
@@ -38,9 +33,9 @@ public class RegistrationTest extends BaseRule {
         mainPage.clickOnLoginButton();
         loginPage.clickOnRegister();
         registerPage.waitForLoadRegisterPage();
-        registerPage.register(NAME, EMAIL, PASSWORD);
+        registerPage.register(user.getName(), user.getEmail(), user.getPassword());
         loginPage.waitForLoadEntrance();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
         accessToken = localStorage.getItem("accessToken");
     }
@@ -52,13 +47,15 @@ public class RegistrationTest extends BaseRule {
         mainPage.clickOnLoginButton();
         loginPage.clickOnRegister();
         registerPage.waitForLoadRegisterPage();
-        registerPage.register(NAME, EMAIL, PASSWORD_FAILED);
+        registerPage.register(user.getName(), user.getEmail(), "arg");
         //Проверка появление текста "Некорректный пароль"
         Assert.assertTrue("Текст об ошибке отсутствует", driver.findElement(registerPage.errorPasswordText).isDisplayed());
     }
 
-    @AfterClass
-    public static void afterClass() {
-        UserClient.deleteUser(accessToken);
+    @After
+    public void cleanUp() {
+        if (accessToken != null) {
+            UserClient.deleteUser(accessToken);
+        }
     }
 }

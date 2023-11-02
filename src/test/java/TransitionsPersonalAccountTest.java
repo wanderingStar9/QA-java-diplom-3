@@ -2,25 +2,18 @@ import client.User;
 import client.UserClient;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.WebStorage;
 import page_object.*;
 
 public class TransitionsPersonalAccountTest extends BaseRule {
-    private final static String EMAIL = "samuraj999@ya.ru";
-    private final static String PASSWORD = "qwerty12345";
-    private final static String NAME = "Peter";
-
     static MainPageStellarBurgers mainPage;
     static LoginPageStellarBurgers loginPage;
     static RegisterPageStellarBurgers registerPage;
     ProfilePageStellarBurgers profilePage;
-    public static String accessToken;
-    User user;
+    private static String accessToken;
+    private User user;
 
 
     @Before
@@ -29,7 +22,7 @@ public class TransitionsPersonalAccountTest extends BaseRule {
         loginPage = new LoginPageStellarBurgers(driver);
         registerPage = new RegisterPageStellarBurgers(driver);
         profilePage = new ProfilePageStellarBurgers(driver);
-        user = new User(EMAIL, PASSWORD, NAME);
+        user = User.createRandomUser();
         UserClient.postCreateNewUser(user);
     }
 
@@ -71,7 +64,7 @@ public class TransitionsPersonalAccountTest extends BaseRule {
     public void exitFromProfileTest() {
         mainPage.clickOnAccountButton();
         loginPage.waitForLoadEntrance();
-        loginPage.authorize(EMAIL, PASSWORD);
+        loginPage.authorize(user.getEmail(), user.getPassword());
         mainPage.waitForLoadMainPage();
         LocalStorage localStorage = ((WebStorage) driver).getLocalStorage();
         accessToken = localStorage.getItem("accessToken");
@@ -82,8 +75,10 @@ public class TransitionsPersonalAccountTest extends BaseRule {
         Assert.assertTrue("Не удалось выйти из аккаунта", driver.findElement(loginPage.entrance).isDisplayed());
     }
 
-    @AfterClass
-    public static void afterClass() {
-        UserClient.deleteUser(accessToken);
+    @After
+    public void cleanUp() {
+        if (accessToken != null) {
+            UserClient.deleteUser(accessToken);
+        }
     }
 }
